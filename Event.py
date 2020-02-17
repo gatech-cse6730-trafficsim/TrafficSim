@@ -8,9 +8,7 @@ import queue
 
 # Unit Delay. It takes one unit delay to move the car 1 unit ahead in the list
 DELAY = 0.2
-
-
-MAX_T = 50
+MAX_T = 100
 
 
 # initialize Event Queue
@@ -18,7 +16,7 @@ Q = queue.PriorityQueue()
 
 
 class Event(object):
-    def __init__(self, T: int, vehicle, light, lane):
+    def __init__(self, T: float, vehicle, light, lane):
         self.T = 0  # Global Time
         self.V = None  # Vehicle ID
 
@@ -30,7 +28,7 @@ class Event(object):
         Q.put(event)
 
     def chain(self, event):
-        # This method is used to run another event without putting it to the event queue, very bad design.
+        # This method is used to immediately invoke another event
         event.execute()
 
     def __lt__(self, other):
@@ -44,7 +42,7 @@ class Event(object):
 
 
 class ArriveCrossing(Event):
-    def __init__(self, T: int, V: Vehicle, C: Intersection, L: Lane):
+    def __init__(self, T: float, V: Vehicle, C: Intersection, L: Lane):
         self.T = T
         self.V = V
         self.L = L
@@ -56,26 +54,28 @@ class ArriveCrossing(Event):
         #update the lane front pointer
         self.L.front = self.V
 
-        print("%d:::Car %d Arrived the Intersection %d from lane %d, Light is %s, Intention is %s" %
+        print("%.2f:::Car %d Arrived the Intersection %s from lane %s, Light is %s, Intention is %s" %
               (self.T, self.V.ID, self.C.ID, self.L.ID, TrafficLightState(light.State).name, Intention(self.V.intention).name))
 
         # If the the lane the vehicle is travelling to is full, add this vehicle to waitlist of the target lane
-        if self.L.sinkLanes[self.V.intention].capacity == 0:
-            self.L.sinkLanes[self.V.intention].waitlist.put_nowait(self.V)
-
+        if self.L.getExitLane(self.V.intention).isFull():
+            print("::::::::Car %d Waitlisted" % self.V.ID)
+            self.L.getExitLane(self.V.intention).waitlist.put_nowait(self.V)
         # if the vehicle can immediately pass the crossing, send a exit event
-        elif self.V.intention in light.AllowedIntention[light.State] and self.L.ID in light.AllowedLanes[light.State]:
+        elif self.V.intention in light.AllowedIntention[light.State] and light.AllowedDirection[self.L.direction]:
+            print("::::::::Car %d Immediate Exited" % self.V.ID)
             self.chain(ExitCrossing(self.T, self.V, self.C, self.L))
         # Otherwise find out the exit time (waitTime, wT)
         else:
             wt = min([T for LS, T in light.nextStateGlobalT.items() if
-                      self.V.intention in light.AllowedIntention[LS] and self.L.ID in light.AllowedLanes[LS]]) - self.T
-            self.dispatch(ExitCrossing(self.T + wt, self.V, self.C, self.L))
+                      self.V.intention in light.AllowedIntention[LS]]) - self.T
+            print("::::::::Car %d Rescheduled Arrival at %f" % (self.V.ID, self.T+wt))
+            self.dispatch(ArriveCrossing(self.T + wt, self.V, self.C, self.L))
 
 
 
 class ExitCrossing(Event):
-    def __init__(self,  T: int, V: Vehicle,  C: Intersection, L: Lane):
+    def __init__(self,  T: float, V: Vehicle,  C: Intersection, L: Lane):
         self.T = T
         self.V = V
         self.C = C
@@ -87,69 +87,66 @@ class ExitCrossing(Event):
 
         # Set lane front pointer to Null and decrease the counter
         self.L.front = None
-        self.L.capacity -= 1
+        self.L.nV -= 1
 
         # Add the vehicle to another lane
-        sinklane = self.L.sinkLanes[self.V.intention]
-        sink = self.L.sinkLanes[self.V.intention].sink
-        self.chain(EnterLane(self.T, self.V, sink, sinklane))
+        self.chain(EnterLane(self.T, self.V, self.L.sink, self.L.getExitLane(self.V.intention)))
 
         # if there is no more vehicle in this lane, update the tail pointer
-        if self.L.capacity == 0:
+        if self.L.isFull():
             self.L.tail = None
         # otherwise, make the follower arriving the crossing, after a small delay (Unit Delay)
-        else:
+        elif self.V.follower:
             self.dispatch(ArriveCrossing(self.T + DELAY, self.V.follower, self.C, self.L))
 
-        print("%d:::Car %d Left the Intersection %d from Lane %d, Light is %s, Intention is %s" %
+        print("%.2f:::Car %d Left the Intersection %s from Lane %s, Light is %s, Intention is %s" %
               (self.T, self.V.ID, self.C.ID, self.L.ID, TrafficLightState(light.State).name, Intention(self.V.intention).name))
 
 
 class EnterLane(Event):
-    def __init__(self, T: int, V: Vehicle, C : Intersection, L: Lane):
+    def __init__(self, T: float, V: Vehicle, C : Intersection, L: Lane):
         self.T = T
         self.V = V
         self.L = L
         self.C = C
 
     def execute(self):
-        # if the lane is empty, immediately make it arrival at the crossing, after a delay that equals capacity * unit delay
-        if self.L.capacity == 0:
-            self.dispatch(ArriveCrossing(self.T + DELAY * self.L.capacity, self.V, self.C, self.L))
+
+        if isinstance(self.L, Lane.UnlimitedLane):
+            # TODO: Add statistic countings
+            return
+
+        # if the lane is empty,  make it arrival at the crossing after a delay that equals (capacity - nV) * unit delay
+        if self.L.isEmpty():
+            self.dispatch(ArriveCrossing(self.T + DELAY * (self.L.capacity - self.L.nV), self.V, self.C, self.L))
         # otherwise update its tail
         else:
             self.L.tail.follower = self.V
         self.L.tail = self.V
-        self.L.capacity += 1
-        print("%d:::Car %d Entered Lane %d" % (self.T, self.V.ID, self.L.ID))
+        self.L.nV += 1
+        print("%.2f:::Car %s Entered Intersection %s from Lane %s, nV = %d" % (self.T, self.V.ID, self.C.ID, self.L.ID, self.L.nV))
 
 
 class LightChange(Event):
 
-    def __init__(self, T: int, light: TrafficLight):
+    def __init__(self, T: float, light: TrafficLight):
         self.Light = light
         self.T = T
 
     def execute(self):
+
+        self.Light.setNextState()
         currentState = self.Light.State
-        nextState = self.Light.queryNextState()
         prevState = self.Light.queryPrevState()
-        elapsedT = self.Light.StateLength[currentState]
+        print("%.2f:::Light %s Changed from %s to %s" % (self.T, self.Light.ID,
+                                                       TrafficLightState(prevState).name, TrafficLightState(currentState).name))
 
-        print("%d:::Light %d Changed from %s to %s" % (self.T, self.Light.ID,
-                                                       TrafficLightState(currentState).name, TrafficLightState(nextState).name))
-        self.Light.State = nextState
-
-        # Schedule for next LightChange event
         nextState = self.Light.queryNextState()
-        for k, v in self.Light.nextStateGlobalT.items():
-            self.Light.nextStateGlobalT[k] += elapsedT
-        if self.Light.nextStateGlobalT[nextState] < MAX_T:
-            self.dispatch(LightChange(self.Light.nextStateGlobalT[nextState], self.Light))
+        self.dispatch(LightChange(self.Light.nextStateGlobalT[nextState], self.Light))
 
 
 class NotifyWaitlist(Event):
-    def __init__(self, T: int, C : Intersection, L: Lane):
+    def __init__(self, T: float, C : Intersection, L: Lane):
         self.T = T
         self.L = L
         self.C = C
@@ -160,7 +157,7 @@ class NotifyWaitlist(Event):
         # for V in self.L.waitlist
         #   self.chain(ArriveCrossing(self.T, V, self.C, self.L))
         # Cause deadloop
-
+        print("%.2f:::Notify Waitlist %s" % self.L.ID)
         buf = []
         while not self.L.waitlist.empty():
             buf.append(self.L.waitlist.get_nowait())

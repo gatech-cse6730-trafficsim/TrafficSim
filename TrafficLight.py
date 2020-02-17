@@ -1,16 +1,17 @@
 from enum import IntEnum
 from Vehicle import Intention
+from Lane import Direction
 
 
 # enum in this class should be defined in order
 class TrafficLightState(IntEnum):
-    LR = 1
-    SR = 2
-    RS = 3
-    RL = 4
+    LR = 0
+    SR = 1
+    RS = 2
+    RL = 3
 
 class FourStatesTrafficLight(object):
-    def __init__(self, ID, state=TrafficLightState.LR, lengthLR=3, lengthSR=3, lengthRS=3, lengthRL=3):
+    def __init__(self, ID: str, state=TrafficLightState.LR, lengthLR=3, lengthSR=3, lengthRS=3, lengthRL=3):
         self.ID = ID
         self.State = state
         self.AllowedIntention = {
@@ -19,12 +20,11 @@ class FourStatesTrafficLight(object):
             TrafficLightState.RS: [Intention.STRAIGHT, Intention.RIGHT],
             TrafficLightState.RL: [Intention.LEFT],
         }
-        self.AllowedLanes = {
-            TrafficLightState.LR: [0,1,4,5],
-            TrafficLightState.SR: [0,1,4,5],
-            TrafficLightState.RS: [2,3,6,7],
-            TrafficLightState.RL: [2,3,6,7],
-        }
+        # TODO: change init state according to input
+        self.AllowedDirection = {Direction.N: True,
+                                 Direction.E: False,
+                                 Direction.S: True,
+                                 Direction.W: False}
         self.StateLength = {
             TrafficLightState.LR: lengthLR,
             TrafficLightState.SR: lengthSR,
@@ -39,7 +39,15 @@ class FourStatesTrafficLight(object):
         }
 
     def queryNextState(self):
-        return 1 if (self.State + 1) > len(TrafficLightState) else self.State + 1
+        return  (self.State + 1) % len(TrafficLightState)
 
     def queryPrevState(self):
-        return len(TrafficLightState) if self.State - 1 == 0 else self.State - 1
+        return (self.State - 1) % len(TrafficLightState)
+
+    def setNextState(self):
+        elapsedT = self.StateLength[self.State]
+        self.State = self.queryNextState()
+        for k, v in self.AllowedDirection.items():
+            self.AllowedDirection[k] = not v
+        for k, v in self.nextStateGlobalT.items():
+            self.nextStateGlobalT[k] += elapsedT

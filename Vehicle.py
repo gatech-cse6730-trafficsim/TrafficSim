@@ -2,9 +2,9 @@ from enum import IntEnum
 
 
 class Intention(IntEnum):
-    LEFT = 1
-    STRAIGHT = 2
-    RIGHT = 3
+    LEFT = -1
+    STRAIGHT = 0
+    RIGHT = 1
 
 
 class BasicVehicle(object):

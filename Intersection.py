@@ -1,29 +1,37 @@
-from Lane import BasicLane
+from Lane import BasicLane, UnlimitedLane, Direction
 from TrafficLight import FourStatesTrafficLight
 from Event import *
 
 class FourWayIntersection(object):
 
-    def __init__(self, ID, crossingT = 1):
+    def __init__(self, ID : str, crossingT = 1):
         self.ID = ID
-        self.lanes = []
-        self.light = FourStatesTrafficLight(0)
+        self.convergenceLanes = dict()
+        self.divergenceLanes = dict()
+        self.light = FourStatesTrafficLight(self.ID)
         self.crossingT = crossingT
 
-        # Initialize the intersection to have 9 lanes, numbered counter clockwise started from the left-most lane on the south.
-        for i in range(8):
-            lane = BasicLane(i)
-            lane.sink = self
-            self.lanes.append(lane)
+        # Initialize the intersection to have 8 lanes, 4 incoming and 4 outgoing lanes
+        for direction in Direction:
+            self.convergenceLanes[direction] = BasicLane(None, self, direction)
+            self.divergenceLanes[direction] = UnlimitedLane(self, None, direction)
 
     def getLaneStats(self):
         return {i:v for i, v in enumerate(self.lanes)}
 
-    def enterIntersectionFromLaneID(self, T, V, laneID):
-        if laneID > len(self.lanes) or laneID < 0:
-            return
-        Q.put(EnterLane(T, V, self, self.lanes[laneID]))
+    def enterIntersectionFromDirection(self, T, V, direction : Direction):
+        Q.put(EnterLane(T, V, self, self.convergenceLanes[direction]))
 
     def startTrafficLight(self, T):
         Q.put(LightChange(T, self.light))
 
+    def connectIntersection(self, C2: Intersection, direction : Direction):
+        oppositeDirection = (direction + 2) % len(Direction)
+
+        self.divergenceLanes[direction] = C2.convergenceLanes[direction]
+        self.divergenceLanes[direction].sink = C2
+        self.divergenceLanes[direction].updateID()
+
+        C2.divergenceLanes[oppositeDirection] = self.convergenceLanes[oppositeDirection]
+        C2.divergenceLanes[oppositeDirection].sink = self
+        C2.divergenceLanes[oppositeDirection].updateID()
