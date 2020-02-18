@@ -29,7 +29,7 @@ def main():
         vid += 1
 
     intersection1.startTrafficLight(0)
-    intersection2.startTrafficLight(0)
+    intersection2.startTrafficLight(1)
 
     while not Q.empty():
         event = Q.get()

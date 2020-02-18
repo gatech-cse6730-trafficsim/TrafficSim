@@ -45,11 +45,12 @@ class Event(object):
 
 
 class ArriveCrossing(Event):
-    def __init__(self, T: float, V: Vehicle, C: Intersection, L: Lane):
+    def __init__(self, T: float, V: Vehicle, C: Intersection, L: Lane, retry = 0):
         self.T = T
         self.V = V
         self.L = L
         self.C = C
+        self.retry = retry
 
     def execute(self):
         light = self.C.light
@@ -57,12 +58,18 @@ class ArriveCrossing(Event):
         #update the lane front pointer
         self.L.front = self.V
 
-        print("%.2f:::Car %d Arrived the Intersection %s from lane %s, Light is %s, Intention is %s" %
-              (self.T, self.V.ID, self.C.ID, self.L.ID, TrafficLightState(light.State).name, Intention(self.V.intention).name))
+        if self.retry:
+            print("%.2f:::Car %d retry %d time passing intersection %s from lane %s, Light is %s, Intention is %s" %
+                  (self.T, self.V.ID, self.retry, self.C.ID, self.L.ID, TrafficLightState(light.State).name,
+                   Intention(self.V.intention).name))
+        else:
+            print("%.2f:::Car %d Arrived the Intersection %s from lane %s, Light is %s, Intention is %s" %
+                  (self.T, self.V.ID, self.C.ID, self.L.ID, TrafficLightState(light.State).name,
+                   Intention(self.V.intention).name))
 
         # If the the lane the vehicle is travelling to is full, add this vehicle to waitlist of the target lane
         if self.L.getExitLane(self.V.intention).isFull():
-            print("::::::::Car %d Waitlisted" % self.V.ID)
+            print("::::::::Car %d blocked" % self.V.ID)
             self.L.getExitLane(self.V.intention).waitlist.put_nowait(self)
         # if the vehicle can immediately pass the crossing, send a exit event
         elif self.V.intention in light.AllowedIntention[light.State] and light.AllowedDirection[self.L.direction]:
@@ -72,8 +79,8 @@ class ArriveCrossing(Event):
         else:
             wt = min([T for LS, T in light.nextStateGlobalT.items() if
                       self.V.intention in light.AllowedIntention[LS]]) - self.T
-            print("::::::::Car %d Rescheduled Arrival at %f" % (self.V.ID, self.T+wt))
-            self.dispatch(ArriveCrossing(self.T + wt, self.V, self.C, self.L))
+            print("::::::::Car %d will wait at crossing until %f" % (self.V.ID, self.T+wt))
+            self.dispatch(ArriveCrossing(self.T + wt, self.V, self.C, self.L, retry=self.retry+1))
 
 
 
