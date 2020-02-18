@@ -12,19 +12,20 @@ def main():
     # initialize an intersection
     intersection1 = FourWayIntersection('1')
     intersection2 = FourWayIntersection('2')
+    # Make intersection 2 north of intersection 1
     intersection1.connectIntersection(intersection2, Direction.N)
     vid = 0
 
 
     for T in range(1,10,1):
-        intersection1.enterIntersectionFromDirection(T, BasicVehicle(vid, intention.LEFT), Direction.S)
+        intersection1.enterIntersectionFromDirection(T, BasicVehicle(vid, intention.LEFT), Direction.N)
         vid += 1
-        intersection1.enterIntersectionFromDirection(T, BasicVehicle(vid, intention.STRAIGHT), Direction.S)
+        intersection1.enterIntersectionFromDirection(T, BasicVehicle(vid, intention.STRAIGHT), Direction.N)
         vid += 1
     for T in range(10,20,1):
-        intersection2.enterIntersectionFromDirection(T, BasicVehicle(vid, intention.STRAIGHT), Direction.N)
+        intersection1.enterIntersectionFromDirection(T, BasicVehicle(vid, intention.STRAIGHT), Direction.N)
         vid += 1
-        intersection2.enterIntersectionFromDirection(T, BasicVehicle(vid, intention.STRAIGHT), Direction.N)
+        intersection1.enterIntersectionFromDirection(T, BasicVehicle(vid, intention.LEFT), Direction.N)
         vid += 1
 
     intersection1.startTrafficLight(0)

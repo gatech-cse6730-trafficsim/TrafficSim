@@ -29,7 +29,10 @@ class Event(object):
 
     def chain(self, event):
         # This method is used to immediately invoke another event
-        event.execute()
+        if self.T < event.T:
+            print("Cannot Chain Future Event, Bug in design")
+        else:
+            event.execute()
 
     def __lt__(self, other):
         return self.T < other.T
@@ -60,7 +63,7 @@ class ArriveCrossing(Event):
         # If the the lane the vehicle is travelling to is full, add this vehicle to waitlist of the target lane
         if self.L.getExitLane(self.V.intention).isFull():
             print("::::::::Car %d Waitlisted" % self.V.ID)
-            self.L.getExitLane(self.V.intention).waitlist.put_nowait(self.V)
+            self.L.getExitLane(self.V.intention).waitlist.put_nowait(self)
         # if the vehicle can immediately pass the crossing, send a exit event
         elif self.V.intention in light.AllowedIntention[light.State] and light.AllowedDirection[self.L.direction]:
             print("::::::::Car %d Immediate Exited" % self.V.ID)
@@ -89,8 +92,11 @@ class ExitCrossing(Event):
         self.L.front = None
         self.L.nV -= 1
 
+        if not self.L.waitlist.empty():
+            self.dispatch(NotifyWaitlist(self.T + DELAY, self.C, self.L))
+
         # Add the vehicle to another lane
-        self.chain(EnterLane(self.T, self.V, self.L.sink, self.L.getExitLane(self.V.intention)))
+        self.chain(EnterLane(self.T, self.V, self.L.getExitLane(self.V.intention).sink, self.L.getExitLane(self.V.intention)))
 
         # if there is no more vehicle in this lane, update the tail pointer
         if self.L.isFull():
@@ -116,8 +122,14 @@ class EnterLane(Event):
             # TODO: Add statistic countings
             return
 
-        # if the lane is empty,  make it arrival at the crossing after a delay that equals (capacity - nV) * unit delay
-        if self.L.isEmpty():
+        # This should not happen after initialization
+        if self.L.isFull():
+            print("::::::::Car %d Waitlisted" % self.V.ID)
+            self.L.waitlist.put_nowait(self)
+            return
+
+        # if the lane is empty, make it arrival at the crossing after a delay that equals (capacity - nV) * unit delay
+        elif self.L.isEmpty():
             self.dispatch(ArriveCrossing(self.T + DELAY * (self.L.capacity - self.L.nV), self.V, self.C, self.L))
         # otherwise update its tail
         else:
@@ -154,12 +166,14 @@ class NotifyWaitlist(Event):
     def execute(self):
 
         # Avoid This
-        # for V in self.L.waitlist
-        #   self.chain(ArriveCrossing(self.T, V, self.C, self.L))
+        # for e in self.L.waitlist
+        #   self.chain(e)
         # Cause deadloop
-        print("%.2f:::Notify Waitlist %s" % self.L.ID)
+        print("%.2f:::Notify Waitlist %s" % (self.T, self.L.ID))
         buf = []
         while not self.L.waitlist.empty():
             buf.append(self.L.waitlist.get_nowait())
-        for V in buf:
-            self.chain(ArriveCrossing(self.T, V, self.C, self.L))
+        for e in buf:
+            # Update Timestamp
+            e.T = self.T
+            self.chain(e)

@@ -20,7 +20,7 @@ class FourWayIntersection(object):
         return {i:v for i, v in enumerate(self.lanes)}
 
     def enterIntersectionFromDirection(self, T, V, direction : Direction):
-        Q.put(EnterLane(T, V, self, self.convergenceLanes[direction]))
+            Q.put(EnterLane(T, V, self, self.convergenceLanes[direction]))
 
     def startTrafficLight(self, T):
         Q.put(LightChange(T, self.light))
@@ -30,8 +30,10 @@ class FourWayIntersection(object):
 
         self.divergenceLanes[direction] = C2.convergenceLanes[direction]
         self.divergenceLanes[direction].sink = C2
+        self.divergenceLanes[direction].source = self
         self.divergenceLanes[direction].updateID()
 
-        C2.divergenceLanes[oppositeDirection] = self.convergenceLanes[oppositeDirection]
-        C2.divergenceLanes[oppositeDirection].sink = self
-        C2.divergenceLanes[oppositeDirection].updateID()
+        self.convergenceLanes[oppositeDirection] = C2.divergenceLanes[oppositeDirection]
+        self.convergenceLanes[oppositeDirection].sink = self
+        self.convergenceLanes[oppositeDirection].source = C2
+        self.convergenceLanes[oppositeDirection].updateID()
