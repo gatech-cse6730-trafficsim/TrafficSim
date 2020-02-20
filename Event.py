@@ -3,6 +3,7 @@ import Lane
 import TrafficLight
 from TrafficLight import TrafficLightState
 from Vehicle import Intention
+from Lane import Direction
 import Intersection
 import queue
 
@@ -14,6 +15,8 @@ MAX_T = 100
 # initialize Event Queue
 Q = queue.PriorityQueue()
 
+# output csv
+RECORD = []
 
 class Event(object):
     def __init__(self, T: float, vehicle, light, lane):
@@ -114,6 +117,8 @@ class ExitCrossing(Event):
 
         print("%.2f:::Car %d Left the Intersection %s from Lane %s, Light is %s, Intention is %s" %
               (self.T, self.V.ID, self.C.ID, self.L.ID, TrafficLightState(light.State).name, Intention(self.V.intention).name))
+
+        RECORD.append([self.T, self.V.ID, self.C.ID, Direction(self.L.direction).name, Intention(self.V.intention).name, TrafficLightState(light.State).name])
 
 
 class EnterLane(Event):

@@ -1,6 +1,6 @@
 import Vehicle
 from Vehicle import Intention
-from queue import PriorityQueue
+from queue import PriorityQueue, Queue
 from enum import IntEnum
 
 AllLanes = dict()
@@ -26,7 +26,7 @@ class BasicLane(object):
         self.capacity: int = 1  # initialize to 20 cars
         self.nV: int = 0  # initialize to zero
         # The incoming events that were blocked due to limited capacity
-        self.waitlist = PriorityQueue()
+        self.waitlist = Queue()
 
     def isFull(self):
         return self.nV == self.capacity
@@ -60,4 +60,4 @@ class UnlimitedLane(BasicLane):
         self.nV: int = 0  # initialize to zero
 
         # The incoming cars that were blocked due to limited capacity
-        self.waitList = PriorityQueue()
+        self.waitList = Queue()

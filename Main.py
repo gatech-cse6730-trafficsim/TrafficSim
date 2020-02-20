@@ -3,7 +3,7 @@ from Vehicle import Intention as intention, BasicVehicle
 from Lane import Direction
 from Intersection import FourWayIntersection
 from Event import *
-
+import csv
 
 MAX_T = 100
 
@@ -35,9 +35,13 @@ def main():
         event = Q.get()
 
         if event.T >= MAX_T:
-            return
+            break
 
         event.execute()
+
+    with open('history.csv', 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerows(RECORD)
 
 if __name__ == "__main__":
     main()
