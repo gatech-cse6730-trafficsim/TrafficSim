@@ -14,11 +14,11 @@ class Direction(IntEnum):
 
 
 class BasicLane(object):
-    def __init__(self, source, sink, direction: Direction):
-        self.source = source
-        self.sink = sink
-        self.direction = direction
-        self.ID = ''
+    def __init__(self, source : 'Intersection', sink : 'Intersection', direction: Direction):
+        self.source :'Intersection'= source
+        self.sink : 'Intersection' = sink
+        self.direction : Direction = direction
+        self.ID : str = ''
         self.updateID()
 
         self.front: Vehicle = None

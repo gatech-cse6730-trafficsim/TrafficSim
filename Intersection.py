@@ -4,12 +4,11 @@ from Event import *
 
 class FourWayIntersection(object):
 
-    def __init__(self, ID : str, crossingT = 1):
-        self.ID = ID
+    def __init__(self, ID : str):
+        self.ID : str = ID
         self.convergenceLanes = dict()
         self.divergenceLanes = dict()
-        self.light = FourStatesTrafficLight(self.ID)
-        self.crossingT = crossingT
+        self.light : FourStatesTrafficLight = FourStatesTrafficLight(self.ID)
 
         # Initialize the intersection to have 8 lanes, 4 incoming and 4 outgoing lanes
         for direction in Direction:

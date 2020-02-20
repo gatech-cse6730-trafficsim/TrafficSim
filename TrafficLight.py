@@ -12,8 +12,8 @@ class TrafficLightState(IntEnum):
 
 class FourStatesTrafficLight(object):
     def __init__(self, ID: str, state=TrafficLightState.LR, lengthLR=3, lengthSR=3, lengthRS=3, lengthRL=3):
-        self.ID = ID
-        self.State = state
+        self.ID : str = ID
+        self.State : TrafficLightState = state
         self.AllowedIntention = {
             TrafficLightState.LR: [Intention.LEFT],
             TrafficLightState.SR: [Intention.STRAIGHT, Intention.RIGHT],

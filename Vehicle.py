@@ -9,6 +9,6 @@ class Intention(IntEnum):
 
 class BasicVehicle(object):
     def __init__(self, ID, intention=Intention.STRAIGHT):
-        self.ID = ID
-        self.intention = intention
-        self.follower = None
+        self.ID : str = ID
+        self.intention : Intention = intention
+        self.follower : BasicVehicle = None
