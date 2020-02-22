@@ -3,6 +3,7 @@ from Vehicle import Intention as intention, BasicVehicle
 from Lane import Direction
 from Intersection import FourWayIntersection
 from Event import *
+import numpy as np
 import csv
 
 MAX_T = 100

@@ -58,7 +58,7 @@ class ArriveCrossing(Event):
     def execute(self):
         light = self.C.light
 
-        #update the lane front pointer
+        # Update the lane front pointer
         self.L.front = self.V
 
         if self.retry:
@@ -74,11 +74,13 @@ class ArriveCrossing(Event):
         if self.L.getExitLane(self.V.intention).isFull():
             print("::::::::Car %d blocked" % self.V.ID)
             self.L.getExitLane(self.V.intention).waitlist.put_nowait(self)
+
         # if the vehicle can immediately pass the crossing, send a exit event
         elif self.V.intention in light.AllowedIntention[light.State] and light.AllowedDirection[self.L.direction]:
             print("::::::::Car %d Immediate Exited" % self.V.ID)
             self.chain(ExitCrossing(self.T, self.V, self.C, self.L))
-        # Otherwise find out the exit time (waitTime, wT)
+
+        # Otherwise find out the exit time (waitTime, wT), at that time, retry ArriveCrossing
         else:
             wt = min([T for LS, T in light.nextStateGlobalT.items() if
                       self.V.intention in light.AllowedIntention[LS]]) - self.T
@@ -105,16 +107,21 @@ class ExitCrossing(Event):
         if not self.L.waitlist.empty():
             self.dispatch(NotifyWaitlist(self.T + DELAY, self.C, self.L))
 
+        if self.L.getExitLane(self.V.intention).isFull():
+            print("!!!!!!! CHECK BUG !!!!!!!!")
+
         # Add the vehicle to another lane
         self.chain(EnterLane(self.T, self.V, self.L.getExitLane(self.V.intention).sink, self.L.getExitLane(self.V.intention)))
 
         # if there is no more vehicle in this lane, update the tail pointer
         if self.L.isFull():
             self.L.tail = None
+
         # otherwise, make the follower arriving the crossing, after a small delay (Unit Delay)
         elif self.V.follower:
             self.dispatch(ArriveCrossing(self.T + DELAY, self.V.follower, self.C, self.L))
 
+        self.V.follower = None
         print("%.2f:::Car %d Left the Intersection %s from Lane %s, Light is %s, Intention is %s" %
               (self.T, self.V.ID, self.C.ID, self.L.ID, TrafficLightState(light.State).name, Intention(self.V.intention).name))
 
@@ -140,8 +147,9 @@ class EnterLane(Event):
             self.L.waitlist.put_nowait(self)
             return
 
+
         # if the lane is empty, make it arrival at the crossing after a delay that equals (capacity - nV) * unit delay
-        elif self.L.isEmpty():
+        if self.L.isEmpty():
             self.dispatch(ArriveCrossing(self.T + DELAY * (self.L.capacity - self.L.nV), self.V, self.C, self.L))
         # otherwise update its tail
         else:
