@@ -11,7 +11,7 @@ class TrafficLightState(IntEnum):
     RL = 3
 
 class FourStatesTrafficLight(object):
-    def __init__(self, ID: str, state=TrafficLightState.LR, lengthLR=3, lengthSR=3, lengthRS=3, lengthRL=3):
+    def __init__(self, ID: str, state=TrafficLightState.RL, lengthLR=3, lengthSR=3, lengthRS=3, lengthRL=3):
         self.ID : str = ID
         self.State : TrafficLightState = state
         self.AllowedIntention = {
@@ -58,12 +58,10 @@ class FourStatesTrafficLight(object):
         return (self.State - 1) % len(TrafficLightState)
 
     def setNextState(self):
-        elapsedT = self.StateLength[self.State]
         self.State = self.queryNextState()
-        #for k, v in self.nextStateGlobalT.items():
-        self.nextStateGlobalT[self.State] += elapsedT
+        self.nextStateGlobalT[self.State] += sum(self.StateLength.values())
 
-    def canPass(self, intention: Intention, direction: Direction, lightState = None):
+    def canPass(self, intention: Intention, direction: Direction, lightState : TrafficLightState = None):
         if lightState:
             if self.AllowedDirection[lightState][direction] and intention in self.AllowedIntention[lightState]:
                 return True
