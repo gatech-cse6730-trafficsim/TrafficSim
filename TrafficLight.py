@@ -20,7 +20,6 @@ class FourStatesTrafficLight(object):
             TrafficLightState.RS: [Intention.STRAIGHT, Intention.RIGHT],
             TrafficLightState.RL: [Intention.LEFT],
         }
-        # TODO: change init state according to input
         self.AllowedDirection = {TrafficLightState.LR: {Direction.N: True,
                                                         Direction.E: False,
                                                         Direction.S: True,
@@ -62,11 +61,11 @@ class FourStatesTrafficLight(object):
         self.nextStateGlobalT[self.State] += sum(self.StateLength.values())
 
     def canPass(self, intention: Intention, direction: Direction, lightState : TrafficLightState = None):
-        if lightState:
+        if lightState is not None:
             if self.AllowedDirection[lightState][direction] and intention in self.AllowedIntention[lightState]:
                 return True
             return False
-        if self.AllowedDirection[self.State][direction] and intention in self.AllowedIntention[self.State]:
+        elif self.AllowedDirection[self.State][direction] and intention in self.AllowedIntention[self.State]:
             return True
         return False
 

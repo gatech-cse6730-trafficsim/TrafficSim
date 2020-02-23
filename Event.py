@@ -84,8 +84,8 @@ class ArriveCrossing(Event):
 
         # Otherwise find out the exit time (waitTime, wT), at that time, retry ArriveCrossing
         else:
-            wt = min([T for LS, T in light.nextStateGlobalT.items() if light.canPass(intention, direction, LS) and T >= self.T ]) - self.T
-            print("%.4f:::Car %s will wait at crossing %s until %f" % (self.T, self.V.ID, self.C.ID, self.T+wt))
+            wt = min([T for LS, T in light.nextStateGlobalT.items() if light.canPass(intention, direction, LS)]) - self.T + DELAY
+            print("%.4f:::Car %s will wait at crossing %s until %f" % (self.T, self.V.ID, self.C.ID, self.T + wt))
             self.dispatch(ArriveCrossing(self.T + wt, self.V, self.C, self.L, retry=self.retry+1))
 
 
