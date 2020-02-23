@@ -33,7 +33,7 @@ class trafficflow():
     
     def gen_traffic_flow_main(self, inter_idx, param= 200, t = 0):
         #idx = 0
-        arrive_id = '%d_S'%(inter_idx) if inter_idx == 0 else '%d_N'%(self.intersections - 1)
+        arrive_id = '%d_N'%(inter_idx) if inter_idx == 0 else '%d_S'%(self.intersections - 1)
         arrive_time = self.generate_arrive_time(param, rand = self.rand, time = t)
         for idx, time in enumerate(arrive_time):
             carid = 'vehicle_%d_main_%d_%.1f'%(inter_idx, idx, t*3600+time)
@@ -41,15 +41,15 @@ class trafficflow():
             for i in range(self.intersections):
                 if np.random.rand() < self.turning_ratio["L"]:
                     direction.append("L")
-                    leave_id = '%d_E'%(i) if inter_idx == 0 else '%d_W'%(self.intersections - i - 1) 
+                    leave_id = '%d_W'%(i) if inter_idx == 0 else '%d_E'%(self.intersections - i - 1) 
                     break
                 elif np.random.rand() > 1 - self.turning_ratio["R"]:
                     direction.append("R")
-                    leave_id = '%d_W'%(i) if inter_idx == 0 else '%d_E'%(self.intersections - i - 1) 
+                    leave_id = '%d_E'%(i) if inter_idx == 0 else '%d_W'%(self.intersections - i - 1) 
                     break
                 else:
                     direction.append("S")
-                    leave_id = '%d_S'%(i) if inter_idx == 0 else '%d_S'%(self.intersections - i - 1)
+                    leave_id = '%d_N'%(i) if inter_idx == 0 else '%d_S'%(self.intersections - i - 1) 
             self.cars[carid] = {"arrive": arrive_id, "leave": leave_id, "direction": direction, "time": time}
             
             
@@ -61,7 +61,7 @@ class trafficflow():
             direction = []
             if np.random.rand() < self.turning_ratio["L"]:
                 direction = ['L'] + ['S'] * (self.intersections - inter_idx - 1)
-                leave_id = '%d_S'%(self.intersections - 1) 
+                leave_id = '%d_S'%(self.intersections - 1)
             elif np.random.rand() > 1 - self.turning_ratio["R"]:
                 direction = ['R'] + ['S'] * inter_idx
                 leave_id = '0_N'
@@ -85,7 +85,7 @@ class trafficflow():
             else:
                 direction = ['S']      
                 leave_id = '%d_E'%(inter_idx)
-            self.cars[carid] = {"arrive": arrive_id, "leave": leave_id, "direction": direction, "time": time}
+            self.cars[carid] = {"arrive": arrive_id, "leave": leave_id, "direction":    direction, "time": time}
     
     def main(self):
         for i in range(self.time):

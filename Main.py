@@ -36,7 +36,7 @@ def main():
     numVehicles = 0
     intersections = [FourWayIntersection(str(i)) for i in range(numIntersection)]
     # Make intersection 2 north of intersection 1
-    intersections[0].connectIntersection(intersections[1], Direction.S)
+    intersections[0].connectIntersection(intersections[1], Direction.N)
     vid = 0
     with open('trafficflow.json', 'r') as f:
         z = json.load(f)

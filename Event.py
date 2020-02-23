@@ -60,7 +60,7 @@ class ArriveCrossing(Event):
 
         # Update the lane front pointer
         self.L.front = self.V
-        intention = self.V.intention[-1]
+        intention = self.V.intention[-1] 
         direction = self.L.direction
 
         if self.retry:
