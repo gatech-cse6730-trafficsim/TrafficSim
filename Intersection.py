@@ -8,7 +8,7 @@ class FourWayIntersection(object):
         self.ID : str = ID
         self.convergenceLanes = dict()
         self.divergenceLanes = dict()
-        self.light : FourStatesTrafficLight = FourStatesTrafficLight(self.ID)
+        self.light : FourStatesTrafficLight = None
 
         # Initialize the intersection to have 8 lanes, 4 incoming and 4 outgoing lanes
         for direction in Direction:
@@ -22,6 +22,7 @@ class FourWayIntersection(object):
             Q.put(EnterLane(T, V, self, self.convergenceLanes[direction]))
 
     def startTrafficLight(self, T):
+        self.light = FourStatesTrafficLight(self.ID, initval=T)
         Q.put(LightChange(T, self.light))
 
     def connectIntersection(self, C2: Intersection, direction : Direction):

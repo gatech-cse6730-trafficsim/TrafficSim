@@ -22,7 +22,7 @@ class BasicLane(object):
         self.updateID()
         self.front: Vehicle = None
         self.tail: Vehicle = None
-        self.capacity: int = 5  # initialize to 20 cars
+        self.capacity: int = 5
         self.nV: int = 0  # initialize to zero
         # The incoming events that were blocked due to limited capacity
         self.waitlist = Queue()

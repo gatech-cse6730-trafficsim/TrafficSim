@@ -55,8 +55,9 @@ def main():
             numVehicles+=1
             allV.append(vehicle)
 
-    for intersection in intersections:
-        intersection.startTrafficLight(0)
+    #for intersection in intersections:
+    intersections[0].startTrafficLight(0)
+    intersections[1].startTrafficLight(2)
 
     while not Q.empty():
         event = Q.get()

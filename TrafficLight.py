@@ -11,9 +11,9 @@ class TrafficLightState(IntEnum):
     RL = 3
 
 class FourStatesTrafficLight(object):
-    def __init__(self, ID: str, state=TrafficLightState.RL, lengthLR=3, lengthSR=3, lengthRS=3, lengthRL=3):
+    def __init__(self, ID: str, initval = 0, state=TrafficLightState.RL, lengthLR=5, lengthSR=5, lengthRS=3, lengthRL=3):
         self.ID : str = ID
-        self.State : TrafficLightState = state
+        self.State : TrafficLightState = state # DO NOT CHANGE THE INIT STATE
         self.AllowedIntention = {
             TrafficLightState.LR: [Intention.LEFT],
             TrafficLightState.SR: [Intention.STRAIGHT, Intention.RIGHT],
@@ -44,10 +44,10 @@ class FourStatesTrafficLight(object):
             TrafficLightState.RL: lengthRL,
         }
         self.nextStateGlobalT = {
-            TrafficLightState.LR: 0,
-            TrafficLightState.SR: 3,
-            TrafficLightState.RS: 6,
-            TrafficLightState.RL: 9
+            TrafficLightState.LR: 0 + initval,
+            TrafficLightState.SR: lengthLR + initval,
+            TrafficLightState.RS: lengthSR + lengthLR + initval,
+            TrafficLightState.RL: lengthSR + lengthLR + lengthRS + initval
         }
 
     def queryNextState(self):
