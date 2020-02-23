@@ -25,14 +25,12 @@ class FourWayIntersection(object):
         Q.put(LightChange(T, self.light))
 
     def connectIntersection(self, C2: Intersection, direction : Direction):
-        oppositeDirection = (direction + 2) % len(Direction)
+        oppositeDirection = (Direction)((direction + 2) % len(Direction))
 
+        C2.convergenceLanes[direction] = BasicLane(self, C2, direction)
         self.divergenceLanes[direction] = C2.convergenceLanes[direction]
-        self.divergenceLanes[direction].sink = C2
-        self.divergenceLanes[direction].source = self
         self.divergenceLanes[direction].updateID()
 
-        self.convergenceLanes[oppositeDirection] = C2.divergenceLanes[oppositeDirection]
-        self.convergenceLanes[oppositeDirection].sink = self
-        self.convergenceLanes[oppositeDirection].source = C2
+        self.convergenceLanes[oppositeDirection] = BasicLane(C2, self, oppositeDirection)
+        C2.divergenceLanes[oppositeDirection] = self.convergenceLanes[oppositeDirection]
         self.convergenceLanes[oppositeDirection].updateID()

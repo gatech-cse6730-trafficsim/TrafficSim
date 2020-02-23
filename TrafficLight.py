@@ -21,10 +21,23 @@ class FourStatesTrafficLight(object):
             TrafficLightState.RL: [Intention.LEFT],
         }
         # TODO: change init state according to input
-        self.AllowedDirection = {Direction.N: True,
-                                 Direction.E: False,
-                                 Direction.S: True,
-                                 Direction.W: False}
+        self.AllowedDirection = {TrafficLightState.LR: {Direction.N: True,
+                                                        Direction.E: False,
+                                                        Direction.S: True,
+                                                        Direction.W: False},
+                                 TrafficLightState.SR: {Direction.N: True,
+                                                        Direction.E: False,
+                                                        Direction.S: True,
+                                                        Direction.W: False},
+                                 TrafficLightState.RL: {Direction.N: False,
+                                                        Direction.E: True,
+                                                        Direction.S: False,
+                                                        Direction.W: True},
+                                 TrafficLightState.RS: {Direction.N: False,
+                                                        Direction.E: True,
+                                                        Direction.S: False,
+                                                        Direction.W: True},
+                                 }
         self.StateLength = {
             TrafficLightState.LR: lengthLR,
             TrafficLightState.SR: lengthSR,
@@ -33,9 +46,9 @@ class FourStatesTrafficLight(object):
         }
         self.nextStateGlobalT = {
             TrafficLightState.LR: 0,
-            TrafficLightState.SR: 0,
-            TrafficLightState.RS: 0,
-            TrafficLightState.RL: 0
+            TrafficLightState.SR: 3,
+            TrafficLightState.RS: 6,
+            TrafficLightState.RL: 9
         }
 
     def queryNextState(self):
@@ -47,7 +60,15 @@ class FourStatesTrafficLight(object):
     def setNextState(self):
         elapsedT = self.StateLength[self.State]
         self.State = self.queryNextState()
-        for k, v in self.AllowedDirection.items():
-            self.AllowedDirection[k] = not v
-        for k, v in self.nextStateGlobalT.items():
-            self.nextStateGlobalT[k] += elapsedT
+        #for k, v in self.nextStateGlobalT.items():
+        self.nextStateGlobalT[self.State] += elapsedT
+
+    def canPass(self, intention: Intention, direction: Direction, lightState = None):
+        if lightState:
+            if self.AllowedDirection[lightState][direction] and intention in self.AllowedIntention[lightState]:
+                return True
+            return False
+        if self.AllowedDirection[self.State][direction] and intention in self.AllowedIntention[self.State]:
+            return True
+        return False
+

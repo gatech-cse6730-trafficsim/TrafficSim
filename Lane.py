@@ -20,10 +20,9 @@ class BasicLane(object):
         self.direction : Direction = direction
         self.ID : str = ''
         self.updateID()
-
         self.front: Vehicle = None
         self.tail: Vehicle = None
-        self.capacity: int = 1  # initialize to 20 cars
+        self.capacity: int = 5  # initialize to 20 cars
         self.nV: int = 0  # initialize to zero
         # The incoming events that were blocked due to limited capacity
         self.waitlist = Queue()
@@ -37,12 +36,12 @@ class BasicLane(object):
     def updateID(self):
         if self.ID in AllLanes:
             del AllLanes[self.ID]
-        sourceID = '0' if self.source is None else self.source.ID
-        sinkID = '0' if self.sink is None else self.sink.ID
+        sourceID = '_' if self.source is None else self.source.ID
+        sinkID = '_' if self.sink is None else self.sink.ID
         self.ID = sourceID + self.direction.name + sinkID
         AllLanes[self.ID] = self
 
-    def getExitLane(self, intention: Vehicle.Intention):
+    def getExitLane(self, intention: Intention):
         exitDirection = (self.direction + intention) % len(Direction)
         return self.sink.divergenceLanes[exitDirection]
 

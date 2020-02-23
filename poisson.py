@@ -49,7 +49,7 @@ class trafficflow():
                     break
                 else:
                     direction.append("S")
-                    leave_id = '%d_S'%(i) if inter_idx == 0 else '%d_N'%(self.intersections - i - 1) 
+                    leave_id = '%d_S'%(i) if inter_idx == 0 else '%d_S'%(self.intersections - i - 1)
             self.cars[carid] = {"arrive": arrive_id, "leave": leave_id, "direction": direction, "time": time}
             
             
@@ -67,7 +67,7 @@ class trafficflow():
                 leave_id = '0_N'
             else:
                 direction = ['S'] 
-                leave_id = '%d_E'%(inter_idx)
+                leave_id = '%d_W'%(inter_idx)
             self.cars[carid] = {"arrive": arrive_id, "leave": leave_id, "direction": direction, "time": time}
     
     def gen_traffic_flow_rightside(self, inter_idx, param=200, t  = 0):
@@ -84,7 +84,7 @@ class trafficflow():
                 leave_id  = '%d_N'%(self.intersections - 1)
             else:
                 direction = ['S']      
-                leave_id = '%d_W'%(inter_idx)
+                leave_id = '%d_E'%(inter_idx)
             self.cars[carid] = {"arrive": arrive_id, "leave": leave_id, "direction": direction, "time": time}
     
     def main(self):
