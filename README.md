@@ -12,7 +12,7 @@ Note that the parameters in main.py should be changed if the input file name cha
 ## Output
 
 Sample console output:
-`1575.1000:::Car vehicle_0_sidel_22_1552.3 retry 1 time passing intersection 1 from lane 0N1, Light is SR, Intention is STRAIGHT  
+1575.1000:::Car vehicle_0_sidel_22_1552.3 retry 1 time passing intersection 1 from lane 0N1, Light is SR, Intention is STRAIGHT  
 1575.1000:::Car vehicle_0_sidel_22_1552.3 Immediate Exited  
 1575.1000:::Car vehicle_0_sidel_22_1552.3 Left the Intersection 1 from Lane 0N1, Light is SR, Intention is STRAIGHT    
 vehicle_0_sidel_22_1552.3 Should Exit from 1N_, Exited from = 1N_  
@@ -22,7 +22,7 @@ vehicle_1_sidel_15_1574.9
 1578.0000:::Light 0 Changed from SR to RS  
 1578.7408:::Car vehicle_1_main_49_1578.7 Entered Intersection 1 from Lane _S1, nV = 1  
 vehicle_1_main_49_1578.7  
-1579.2408:::Car vehicle_1_main_49_1578.7 Arrived the Intersection 1 from lane _S1, Light is SR, Intention is RIGHT`  
+1579.2408:::Car vehicle_1_main_49_1578.7 Arrived the Intersection 1 from lane _S1, Light is SR, Intention is RIGHT  
 
 File Output:
 
