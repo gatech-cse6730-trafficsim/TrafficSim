@@ -11,7 +11,8 @@ Note that the parameters in main.py should be changed if the input file name cha
 
 ## Output
 
-Sample console output:
+Sample console output:  
+  
 1575.1000:::Car vehicle_0_sidel_22_1552.3 retry 1 time passing intersection 1 from lane 0N1, Light is SR, Intention is STRAIGHT  
 1575.1000:::Car vehicle_0_sidel_22_1552.3 Immediate Exited  
 1575.1000:::Car vehicle_0_sidel_22_1552.3 Left the Intersection 1 from Lane 0N1, Light is SR, Intention is STRAIGHT    
