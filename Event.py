@@ -131,8 +131,6 @@ class ExitCrossing(Event):
         if not self.L.waitlist.empty():
             self.chain(NotifyWaitlist(self.T, self.C, self.L))
 
-        RECORD.append([self.T, self.V.ID, self.C.ID, Direction(self.L.direction).name, Intention(intention).name, TrafficLightState(light.State).name])
-
 
 class EnterLane(Event):
     def __init__(self, T: float, V: Vehicle, C : Intersection, L: Lane):
@@ -146,6 +144,8 @@ class EnterLane(Event):
         if isinstance(self.L, Lane.UnlimitedLane) and self.L.sink is None:
             print("%s Should Exit from %s, Exited from = %s" % (self.V.ID, self.V.exitLaneID, self.L.ID))
             self.V.exited = True
+            RECORD.append([self.V.seqID, self.V.enterTime, self.T, self.V.ID, self.T-self.V.enterTime])
+
             if self.V.exitLaneID == self.L.ID:
                 self.V.correctExit = True
             return

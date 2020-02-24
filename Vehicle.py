@@ -8,11 +8,13 @@ class Intention(IntEnum):
 
 
 class BasicVehicle(object):
-    def __init__(self, ID, intention=[Intention.STRAIGHT]):
+    def __init__(self, ID, intention=[Intention.STRAIGHT], seqID : int = 0, enterTime : float = 0):
         self.ID : str = ID
         self.intention : List[Intention] = intention
         self.follower : BasicVehicle = None
         self.exitLaneID : str = ''
         self.correctExit : bool = False
         self.exited: bool = False
+        self.seqID = seqID
+        self.enterTime = enterTime
 

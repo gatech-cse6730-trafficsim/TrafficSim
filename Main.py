@@ -9,7 +9,6 @@ import json
 
 MAX_T = 15000
 
-
 def main():
 
     allV = []
@@ -38,18 +37,19 @@ def main():
     # Make intersection 2 north of intersection 1
     intersections[0].connectIntersection(intersections[1], Direction.N)
     vid = 0
-    with open('trafficflow.json', 'r') as f:
+    with open('trafficflow_10th.json', 'r') as f:
         z = json.load(f)
 
         for k,v in z.items():
             vid = k
+            _, _, _, _, enterTime = vid.split('_')
             direction_in = v["arrive"][-1]
             direction_out = v["leave"][-1]
             iid_in = int(v["arrive"][0])
             iid_out = v["leave"][0]
             intent = [mInt[d] for d in v["direction"]][::-1] # reverse to make pop more efficient
             T = v["time"]
-            vehicle = BasicVehicle(vid, intent)
+            vehicle = BasicVehicle(vid, intent, seqID=numVehicles, enterTime=float(enterTime))
             vehicle.exitLaneID = iid_out+direction_out+'_'
             intersections[iid_in].enterIntersectionFromDirection(T, vehicle, mArrive[direction_in])
             numVehicles+=1
@@ -69,8 +69,9 @@ def main():
 
     print("Exit Lanes Correct = %d, Exited = %d,  Total = %d" % (sum([v.correctExit for v in allV]),sum([v.exited for v in allV]), numVehicles))
 
-    with open('history.csv', 'w') as csvfile:
+    with open('history.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
+        writer.writerow(['SEQ', 'ENTER', 'EXIT', 'ID', 'DELTAT'])
         writer.writerows(RECORD)
 
 if __name__ == "__main__":
